@@ -1,0 +1,67 @@
+# #create CI CD pipeline in azure devops in yaml format
+
+# Sign in to your Azure DevOps account and navigate to your project.
+
+# Click on "Pipelines" in the left-hand navigation menu, then click "New Pipeline" to create a new pipeline.
+
+# Choose where your code is located. Azure DevOps supports various code repositories such as Azure Repos, GitHub, Bitbucket, and others. Select the repository that you want to use and authorize access.
+
+# Select the branch that you want to use for your pipeline. You can choose the default branch or select a specific branch.
+
+# Choose the YAML template option and select the Starter pipeline, then click the "Apply" button. This will create a YAML file for your pipeline.
+
+# Edit the YAML file to define the stages, jobs, and steps for your pipeline. The YAML file is divided into two sections: trigger and stages.
+
+# a. In the trigger section, define the conditions that trigger the pipeline, such as when a push to a specific branch occurs.
+
+# b. In the stages section, define the stages for your pipeline, such as Build, Test, and Deploy.
+
+# c. Within each stage, you can define one or more jobs that execute tasks.
+
+# d. Within each job, you can define one or more steps that define the specific tasks that the job will execute.
+
+# Save the YAML file, commit it to your repository, and push it.
+
+# Verify that the pipeline is working as expected by going to the "Pipelines" section of your Azure DevOps project and viewing the pipeline run status.
+
+# Here is an example of a YAML pipeline:
+
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  displayName: 'Build'
+  jobs:
+  - job: Build
+    displayName: 'Build'
+    steps:
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build'
+
+- stage: Test
+  displayName: 'Test'
+  jobs:
+  - job: Test
+    displayName: 'Test'
+    steps:
+    - script: dotnet test --configuration $(buildConfiguration)
+      displayName: 'dotnet test'
+
+- stage: Deploy
+  displayName: 'Deploy'
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy'
+    steps:
+    - script: |
+        az webapp deployment source config-zip --resource-group $(resourceGroupName) --name $(appName) --src $(System.DefaultWorkingDirectory)/$(Build.BuildId)/$(Build.ArtifactStagingDirectory)/$(Build.ArtifactName).zip
+      displayName: 'Deploy to Azure Web App'
+
+#This pipeline has three stages: Build, Test, and Deploy. The Build stage builds the application, the Test stage runs tests, and the Deploy stage deploys the application to an Azure Web App.

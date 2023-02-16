@@ -1,0 +1,51 @@
+# This pipeline contains a basic build and release stage
+
+trigger:
+  # Triggers the pipeline when a commit is pushed to the main branch
+  - main
+
+# Defines the stages for the pipeline
+
+# This YAML pipeline defines two stages: a Build stage and a Release stage. The Build stage contains a single job, which builds the application, runs unit tests, and publishes the artifacts to Azure DevOps. 
+stages:
+  - stage: Build
+    displayName: Build stage
+    jobs:
+      - job: BuildJob
+        displayName: Build job
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: echo Building the application...
+            displayName: Build application
+          - script: echo Running unit tests...
+            displayName: Unit tests
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'myApplication'
+              publishLocation: 'Container'
+
+#The Release stage depends on the Build stage and contains a single job, which deploys the application, runs integration tests, and uses the AzureWebApp task to deploy the application to an Azure Web App.
+
+  - stage: Release
+    displayName: Release stage
+    dependsOn: Build
+    jobs:
+      - job: ReleaseJob
+        displayName: Release job
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: echo Deploying the application...
+            displayName: Deploy application
+          - script: echo Running integration tests...
+            displayName: Integration tests
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'My Azure Subscription'
+              appName: 'my-app'
+              package: '$(Pipeline.Workspace)/drop/myApplication.zip'
+              appSettings: '-ConnectionStrings:MyDb=MyConnectionString'
+
+# Note that you will need to update the pipeline with your specific details, such as your Azure subscription and web app name. Also, this is just a basic example to give you an idea of what a YAML pipeline for CI/CD might look like in Azure DevOps. You can customize the pipeline to fit your specific needs and requirements.
